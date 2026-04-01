@@ -85,10 +85,9 @@ with st.sidebar:
         if check_date.weekday() in draw_days:
             next_draw_date = check_date
             break
-    
+
     if next_draw_date:
-        days_until = (next_draw_date - today).days
-        st.metric(draw_days[next_draw_date.weekday()], next_draw_date.strftime('%B %d, %Y'), f"{days_until} days away")
+        st.metric(draw_days[next_draw_date.weekday()], next_draw_date.strftime('%B %d, %Y'))
     
     st.divider()
     
