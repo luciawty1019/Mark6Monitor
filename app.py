@@ -76,21 +76,6 @@ with st.sidebar:
     
     st.divider()
     
-    st.subheader("🎯 Next Draw")
-    today = datetime.now()
-    draw_days = {1: "Tuesday", 3: "Thursday", 5: "Saturday"}
-    next_draw_date = None
-    for i in range(7):
-        check_date = today + timedelta(days=i)
-        if check_date.weekday() in draw_days:
-            next_draw_date = check_date
-            break
-
-    if next_draw_date:
-        st.metric(draw_days[next_draw_date.weekday()], next_draw_date.strftime('%B %d, %Y'))
-    
-    st.divider()
-    
     with st.expander("📖 Methodology", expanded=False):
         st.markdown("""
         **Data Sources:**
