@@ -2,7 +2,7 @@
 
 **Statistical Anomaly Detection and Fairness Analysis in Mark Six Lottery Draws**
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://mark6monitor-luciawty1019.streamlit.app)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)]([https://mark6monitor-luciawty1019.streamlit.app](https://mark6-monitor.streamlit.app/))
 
 ## 📋 Overview
 
