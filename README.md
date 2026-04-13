@@ -49,7 +49,7 @@ This application analyzes **2,533 Mark Six lottery draws from 2008 to 2026** usi
 | Years Covered | 2008 - 2026 |
 | Chi-square P-value | 0.3293 |
 | Overall Fairness | ✅ **FAIR** (no global bias detected) |
-| Anomalies Found | 253 (9.9% of draws) |
+| Anomalies Found | 252 (9.9% of draws) |
 | Most Common Number | #49 (346 times, +11.6%) |
 | Least Common Number | #41 (273 times, -11.9%) |
 
