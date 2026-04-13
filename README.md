@@ -8,7 +8,7 @@
 
 This application analyzes **2,533 Mark Six lottery draws from 2008 to 2026** using advanced statistical methods and machine learning to evaluate the fairness of the lottery and detect anomalous patterns.
 
-**Live Demo:** [https://mark6monitor-luciawty1019.streamlit.app](https://mark6monitor-luciawty1019.streamlit.app)
+**Live Demo:** [[https://mark6monitor-luciawty1019.streamlit.app](https://mark6-monitor.streamlit.app/)]
 
 ## ✨ Features
 
