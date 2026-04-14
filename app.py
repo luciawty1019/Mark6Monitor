@@ -500,15 +500,32 @@ with tab1:
         elif freq > expected:
             colors.append('green')
         else:
-            colors.append('#FFD700')  # Yellow/Gold for lower than expected
+            colors.append('#FFD700')  # Yellow/Gold
     
     fig = go.Figure()
     fig.add_trace(go.Bar(x=list(observed_full.index), y=observed_full.values, 
-                         name='Actual', marker_color=colors))
+                         name='Actual Frequency', marker_color=colors,
+                         hovertemplate='Number: %{x}<br>Frequency: %{y}<extra></extra>'))
     fig.add_trace(go.Scatter(x=list(observed_full.index), y=[expected]*49, 
-                             name='Expected', line=dict(color='blue', dash='dash')))
-    fig.update_layout(xaxis_title='Number', yaxis_title='Frequency')
+                             name='Expected Frequency', line=dict(color='blue', dash='dash', width=2)))
+    fig.update_layout(
+        xaxis_title='Number',
+        yaxis_title='Frequency',
+        legend_title='Legend',
+        legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1)
+    )
     st.plotly_chart(fig, use_container_width=True)
+    
+    # Add color legend explanation
+    st.markdown("""
+    <div style="background-color: #f0f2f6; padding: 10px; border-radius: 10px; margin: 10px 0;">
+    <b>📊 Color Legend:</b><br>
+    🟢 <b>Green bars</b> = Frequency is <b>higher than expected</b><br>
+    🟡 <b>Yellow bars</b> = Frequency is <b>lower than expected</b><br>
+    🔴 <b>Red bars</b> = Number has <b>never been drawn</b> (frequency = 0)<br>
+    🔵 <b>Blue dashed line</b> = Expected frequency
+    </div>
+    """, unsafe_allow_html=True)
     
     # Recent draws
     st.subheader("📋 Recent Draws (Last 20)")
@@ -580,7 +597,7 @@ with tab2:
         else:
             st.metric("Least Common", ', '.join([f"#{n}" for n in least_year[:3]]) if least_year else 'N/A')
     
-    # Year frequency chart
+        # Year frequency chart
     colors_year = []
     for num in range(1, 50):
         freq = year_freq_full[num]
@@ -589,17 +606,33 @@ with tab2:
         elif freq > exp_year:
             colors_year.append('green')
         else:
-            colors_year.append('#FFD700')
+            colors_year.append('#FFD700')  # Yellow/Gold
     
     fig_year = go.Figure()
     fig_year.add_trace(go.Bar(x=list(year_freq_full.index), y=year_freq_full.values, 
-                              name='Actual', marker_color=colors_year))
+                              name='Actual Frequency', marker_color=colors_year,
+                              hovertemplate='Number: %{x}<br>Frequency: %{y}<extra></extra>'))
     fig_year.add_trace(go.Scatter(x=list(year_freq_full.index), y=[exp_year]*49, 
-                                  name='Expected', line=dict(color='blue', dash='dash')))
-    fig_year.update_layout(title=f'Number Frequency - {selected_year}', xaxis_title='Number', yaxis_title='Frequency')
+                                  name='Expected Frequency', line=dict(color='blue', dash='dash', width=2)))
+    fig_year.update_layout(
+        title=f'Number Frequency - {selected_year}',
+        xaxis_title='Number',
+        yaxis_title='Frequency',
+        legend_title='Legend',
+        legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='right', x=1)
+    )
     st.plotly_chart(fig_year, use_container_width=True)
+    
     # Add color legend explanation
-    st.caption("📊 **Color Legend:** 🟢 Green = Higher than expected | 🟡 Yellow = Lower than expected | 🔴 Red = Never drawn")
+    st.markdown("""
+    <div style="background-color: #f0f2f6; padding: 10px; border-radius: 10px; margin: 10px 0;">
+    <b>📊 Color Legend:</b><br>
+    🟢 <b>Green bars</b> = Frequency is <b>higher than expected</b><br>
+    🟡 <b>Yellow bars</b> = Frequency is <b>lower than expected</b><br>
+    🔴 <b>Red bars</b> = Number has <b>never been drawn</b> (frequency = 0)<br>
+    🔵 <b>Blue dashed line</b> = Expected frequency
+    </div>
+    """, unsafe_allow_html=True)
 
 # ============================================
 # TAB 3: FAIRNESS ANALYSIS
@@ -737,6 +770,146 @@ with tab3:
     st.write(f"**Expected frequency per pair:** {pair_results['expected']:.2f}")
     st.write(f"**Total pairs analyzed:** {pair_results['total_pairs']:,}")
     st.write(f"**Unique pairs found:** {pair_results['n_pairs_analyzed']} out of 1,176 possible")
+
+    # ============================================
+    # SYNTHETIC DATA VALIDATION
+    # ============================================
+    st.subheader("🎲 4.2.2 Synthetic Data Validation")
+    st.write("""
+    This test validates the anomaly detection model by comparing actual draws with 
+    perfectly random synthetic draws. The false positive rate should be close to the 
+    expected contamination rate (10%).
+    """)
+    
+    if st.button("Run Synthetic Data Validation", type="secondary", key="synth_button"):
+        with st.spinner("Generating synthetic data and validating model..."):
+            # Generate perfectly random synthetic draws
+            np.random.seed(42)
+            n_synthetic = len(df_combined)
+            synthetic_draws = []
+            
+            progress = st.progress(0)
+            status_text = st.empty()
+            
+            for i in range(n_synthetic):
+                draw = sorted(np.random.choice(49, 6, replace=False) + 1)
+                synthetic_draws.append(draw)
+                if (i + 1) % 500 == 0:
+                    progress.progress((i + 1) / n_synthetic)
+                    status_text.text(f"Generating synthetic draws: {i+1}/{n_synthetic}")
+            
+            progress.empty()
+            status_text.empty()
+            
+            # Create synthetic DataFrame
+            synth_df = pd.DataFrame({
+                'Numbers': synthetic_draws,
+                'Date': pd.date_range(start='2000-01-01', periods=n_synthetic, freq='D')
+            })
+            
+            # Add features for synthetic data
+            synth_numbers = np.array(synth_df['Numbers'].tolist())
+            synth_df['Low_Count'] = (synth_numbers <= 24).sum(axis=1)
+            synth_df['High_Count'] = (synth_numbers >= 25).sum(axis=1)
+            synth_df['Odd_Count'] = (synth_numbers % 2 == 1).sum(axis=1)
+            synth_df['Even_Count'] = (synth_numbers % 2 == 0).sum(axis=1)
+            
+            def count_pairs(nums):
+                s = sorted(nums)
+                pairs = 0
+                for i in range(5):
+                    if s[i+1] - s[i] == 1:
+                        pairs += 1
+                return pairs
+            
+            synth_df['Consecutive'] = [count_pairs(nums) for nums in synthetic_draws]
+            
+            # Train model on real data
+            features_real = df_combined[['Low_Count', 'High_Count', 'Odd_Count', 'Even_Count', 'Consecutive']].values
+            scaler_synth = StandardScaler()
+            features_real_scaled = scaler_synth.fit_transform(features_real)
+            
+            model_synth = IsolationForest(contamination=0.1, random_state=42)
+            model_synth.fit(features_real_scaled)
+            
+            # Test on synthetic data
+            synth_features = synth_df[['Low_Count', 'High_Count', 'Odd_Count', 'Even_Count', 'Consecutive']].values
+            synth_scaled = scaler_synth.transform(synth_features)
+            synth_pred = model_synth.predict(synth_scaled)
+            synth_anomalies = (synth_pred == -1).sum()
+            false_positive_rate = synth_anomalies / n_synthetic * 100
+            
+            # Chi-square test on synthetic data (check randomness)
+            synth_all_nums = [n for draw in synthetic_draws for n in draw]
+            synth_freq = pd.Series(synth_all_nums).value_counts().reindex(range(1,50), fill_value=0)
+            synth_chi2, synth_p = stats.chisquare(synth_freq.values)
+            
+            # Calculate risk distribution for real data (FIXED: calculate here instead of using risk_counts)
+            real_anomalies = df_combined['Is_Anomaly'].sum()
+            real_high = df_combined[df_combined['Risk'] == 'HIGH'].shape[0]
+            real_medium = df_combined[df_combined['Risk'] == 'MEDIUM'].shape[0]
+            real_low = df_combined[df_combined['Risk'] == 'LOW'].shape[0]
+            
+            # Calculate risk distribution for synthetic data
+            synth_scores = model_synth.score_samples(synth_scaled)
+            synth_high = sum(1 for s in synth_scores if s < -0.2)
+            synth_medium = sum(1 for s in synth_scores if -0.2 <= s < -0.1)
+            synth_low = sum(1 for s in synth_scores if s >= -0.1)
+            
+            # Display results
+            st.write("**Synthetic Data Validation Results:**")
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Synthetic Draws Generated", n_synthetic)
+            with col2:
+                st.metric("Anomalies Detected", synth_anomalies)
+            with col3:
+                st.metric("False Positive Rate", f"{false_positive_rate:.1f}%")
+            
+            # Validation result
+            st.write("**Validation Result:**")
+            if 8 <= false_positive_rate <= 12:
+                st.success(f"✅ Model performs as expected! False positive rate ({false_positive_rate:.1f}%) is close to expected (10%)")
+            else:
+                st.warning(f"⚠️ False positive rate ({false_positive_rate:.1f}%) deviates from expected (10%)")
+            
+            # Chi-square test result
+            st.write(f"**Synthetic Data Randomness Test:**")
+            st.write(f"Chi-square p-value: {synth_p:.4f}")
+            if synth_p > 0.05:
+                st.success("✅ Synthetic data passes randomness test")
+            else:
+                st.warning("⚠️ Synthetic data shows bias - check random number generator")
+            
+            # Visualize synthetic vs real distribution
+            st.write("**Synthetic vs Real Number Distribution:**")
+            fig_synth = go.Figure()
+            fig_synth.add_trace(go.Bar(x=list(range(1,50)), y=synth_freq.values, 
+                                       name='Synthetic Data', marker_color='lightblue', opacity=0.7))
+            fig_synth.add_trace(go.Scatter(x=list(range(1,50)), y=observed_full.values,
+                                           name='Real Data', line=dict(color='red', width=2)))
+            fig_synth.update_layout(title='Synthetic vs Real Number Distribution',
+                                    xaxis_title='Number', yaxis_title='Frequency')
+            st.plotly_chart(fig_synth, use_container_width=True)
+            
+            # Anomaly distribution comparison
+            st.write("**Anomaly Detection Comparison:**")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                st.write("**Risk Distribution on Synthetic Data:**")
+                st.write(f"- HIGH: {synth_high}")
+                st.write(f"- MEDIUM: {synth_medium}")
+                st.write(f"- LOW: {synth_low}")
+            with col2:
+                st.write("**Risk Distribution on Real Data:**")
+                st.write(f"- HIGH: {real_high}")
+                st.write(f"- MEDIUM: {real_medium}")
+                st.write(f"- LOW: {real_low}")
+            
+            st.write("**Interpretation:**")
+            st.write(f"The synthetic data false positive rate is {false_positive_rate:.1f}%, which is {'close to' if 8 <= false_positive_rate <= 12 else 'different from'} the expected 10%. This confirms the anomaly detection model is {'well-calibrated' if 8 <= false_positive_rate <= 12 else 'needs adjustment'}.")
 
 # ============================================
 # TAB 4: HOT & COLD NUMBERS
