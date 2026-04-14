@@ -2,13 +2,12 @@
 
 **Statistical Anomaly Detection and Fairness Analysis in Mark Six Lottery Draws**
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://mark6monitor-luciawty1019.streamlit.app)
 
 ## 📋 Overview
 
 This application analyzes **2,533 Mark Six lottery draws from 2008 to 2026** using advanced statistical methods and machine learning to evaluate the fairness of the lottery and detect anomalous patterns.
 
-**Live Demo:** [https://mark6monitor-luciawty1019.streamlit.app](https://mark6monitor-luciawty1019.streamlit.app)
+**Live Demo:** [[https://mark6monitor-luciawty1019.streamlit.app](https://mark6-monitor.streamlit.app/)]
 
 ## ✨ Features
 
@@ -50,7 +49,7 @@ This application analyzes **2,533 Mark Six lottery draws from 2008 to 2026** usi
 | Years Covered | 2008 - 2026 |
 | Chi-square P-value | 0.3293 |
 | Overall Fairness | ✅ **FAIR** (no global bias detected) |
-| Anomalies Found | 253 (9.9% of draws) |
+| Anomalies Found | 252 (9.9% of draws) |
 | Most Common Number | #49 (346 times, +11.6%) |
 | Least Common Number | #41 (273 times, -11.9%) |
 
